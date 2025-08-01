@@ -120,9 +120,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // Gọi dữ liệu danh sách bài hát từ api
   const { tracks } = await httpRequest.get(endpoints.tracks);
-  console.log("tracks", tracks);
   if (tracks.length) {
-    // player._songs = res.tracks;
     player._tracks = tracks;
   }
 
@@ -238,7 +236,7 @@ const player = {
   },
   _handleForNewIndex() {
     this._currentIndex =
-      (this._currentIndex + this._songs.length) % this._songs.length;
+      (this._currentIndex + this._tracks.length) % this._tracks.length;
     this._handlePlayback();
     this._render();
   },
@@ -259,7 +257,7 @@ const player = {
     this._progressElement.style.background = `linear-gradient(to right, var(--accent-primary) 0%, var(--accent-primary) ${progress}%, #ccc ${progress}%, #ccc 100%)`;
   },
   _getCurrentSong() {
-    return this._songs[this._currentIndex];
+    return this._tracks[this._currentIndex];
   },
   _togglePlay() {
     // Khi click vào nút play thì toggle song
@@ -273,9 +271,9 @@ const player = {
     const currentSong = this._getCurrentSong(this._currentIndex);
     this._artistNameElement.textContent = currentSong.title;
     this._monthlyListenersElement = currentSong.views;
-    this._heroImageElement.src = currentSong.img;
+    this._heroImageElement.src = currentSong.artist_image_url;
 
-    this._audioElement.src = currentSong.path;
+    this._audioElement.src = currentSong.audio_url;
 
     // oncanplay
     this._audioElement.oncanplay = () => {
@@ -289,9 +287,15 @@ const player = {
       );
     };
   },
+  _getValidImageUrl(urlImage) {
+    const allowedExtensions = ["jpg", "jpeg", "png", "gif", "svg", "webp"];
+    const extension = urlImage.split(".").pop().toLowerCase();
+    const img = allowedExtensions.includes(extension);
+    return img ? urlImage : "placeholder.svg";
+  },
   _render() {
-    const html = this._songs
-      .map((song, index) => {
+    const html = this._tracks
+      .map((track, index) => {
         const isCurrentSongPlaying =
           index === this._currentIndex && this._isPlaying;
         return `
@@ -310,8 +314,8 @@ const player = {
 
           <div class="track-image">
             <img
-              src=${this._escapeHtml(song.img)}
-              alt="${this._escapeHtml(song.name)}"
+              src=${this._escapeHtml(this._getValidImageUrl(track.image_url))}
+              alt="${this._escapeHtml(track.name)}"
               width="40"
               height="40"
             />
@@ -320,11 +324,15 @@ const player = {
           <div class="track-info">
             <div class="track-name ${
               isCurrentSongPlaying ? "active" : ""
-            }">${this._escapeHtml(song.name)}</div>
-            <div class="track-singer">${this._escapeHtml(song.singer)}</div>
+            }">${this._escapeHtml(track.title)}</div>
+            <div class="track-singer">${this._escapeHtml(
+              track.artist_name
+            )}</div>
           </div>
 
-          <div class="track-duration">${this._escapeHtml(song.time)}</div>
+          <div class="track-duration">${this._escapeHtml(
+            this._formatTime(track.duration)
+          )}</div>
 
           <button class="track-menu-btn">
             <i class="fas fa-ellipsis-h"></i>
