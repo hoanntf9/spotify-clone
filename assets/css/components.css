@@ -529,7 +529,7 @@
 .track-image img {
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   object-fit: cover;
 }
 
