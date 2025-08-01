@@ -1,0 +1,350 @@
+// Auth Modal Functionality
+document.addEventListener("DOMContentLoaded", function () {
+  // Get DOM elements
+  const signupBtn = document.querySelector(".signup-btn");
+  const loginBtn = document.querySelector(".login-btn");
+  const authModal = document.querySelector("#authModal");
+  const modalClose = document.querySelector("#modalClose");
+  const signupForm = document.querySelector("#signupForm");
+  const loginForm = document.querySelector("#loginForm");
+  const showLoginBtn = document.querySelector("#showLogin");
+  const showSignupBtn = document.querySelector("#showSignup");
+
+  // Function to show signup form
+  function showSignupForm() {
+    signupForm.style.display = "block";
+    loginForm.style.display = "none";
+  }
+
+  // Function to show login form
+  function showLoginForm() {
+    signupForm.style.display = "none";
+    loginForm.style.display = "block";
+  }
+
+  // Function to open modal
+  function openModal() {
+    authModal.classList.add("show");
+    document.body.style.overflow = "hidden"; // Prevent background scrolling
+  }
+
+  // Open modal with Sign Up form when clicking Sign Up button
+  signupBtn.addEventListener("click", function () {
+    showSignupForm();
+    openModal();
+  });
+
+  // Open modal with Login form when clicking Login button
+  loginBtn.addEventListener("click", function () {
+    showLoginForm();
+    openModal();
+  });
+
+  // Close modal function
+  function closeModal() {
+    authModal.classList.remove("show");
+    document.body.style.overflow = "auto"; // Restore scrolling
+  }
+
+  // Close modal when clicking close button
+  modalClose.addEventListener("click", closeModal);
+
+  // Close modal when clicking overlay (outside modal container)
+  authModal.addEventListener("click", function (e) {
+    if (e.target === authModal) {
+      closeModal();
+    }
+  });
+
+  // Close modal with Escape key
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && authModal.classList.contains("show")) {
+      closeModal();
+    }
+  });
+
+  // Switch to Login form
+  showLoginBtn.addEventListener("click", function () {
+    showLoginForm();
+  });
+
+  // Switch to Signup form
+  showSignupBtn.addEventListener("click", function () {
+    showSignupForm();
+  });
+});
+
+// User Menu Dropdown Functionality
+document.addEventListener("DOMContentLoaded", function () {
+  const userAvatar = document.getElementById("userAvatar");
+  const userDropdown = document.getElementById("userDropdown");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  // Toggle dropdown when clicking avatar
+  userAvatar.addEventListener("click", function (e) {
+    e.stopPropagation();
+    userDropdown.classList.toggle("show");
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener("click", function (e) {
+    if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+      userDropdown.classList.remove("show");
+    }
+  });
+
+  // Close dropdown when pressing Escape
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && userDropdown.classList.contains("show")) {
+      userDropdown.classList.remove("show");
+    }
+  });
+
+  // Handle logout button click
+  logoutBtn.addEventListener("click", function () {
+    // Close dropdown first
+    userDropdown.classList.remove("show");
+
+    console.log("Logout clicked");
+    // TODO: Students will implement logout logic here
+  });
+});
+
+// Other functionality
+document.addEventListener("DOMContentLoaded", function () {
+  // TODO: Implement other functionality here
+  // Player Start
+  player.start();
+});
+
+const player = {
+  NEXT: 1,
+  PREV: -1,
+  PREV_THROTTLE: 2,
+  _tracklistElement: document.querySelector(".track-list"),
+  _togglePlayElement: document.querySelector(".btn-toggle-play"),
+  _audioElement: document.querySelector(".audio"),
+  _artistNameElement: document.querySelector(".artist-name"),
+  _monthlyListenersElement: document.querySelector(".monthly-listeners"),
+  _heroImageElement: document.querySelector(".hero-image"),
+  _playIconElement: document.querySelector(".play-icon"),
+  _progressElement: document.querySelector(".progress-bar"),
+  _timeStartElement: document.querySelector(".time-start"),
+  _timeEndElement: document.querySelector(".time-end"),
+  _prevElement: document.querySelector(".btn-prev"),
+  _nextElement: document.querySelector(".btn-next"),
+  _songs: [
+    {
+      id: 1,
+      path: "./assets/songs/tuyet_yeu_thuong.mp3",
+      name: "Tuyết yêu thương",
+      singer: "Mochi",
+      img: "./assets/img/picture01.jpg",
+      views: "27,498,341",
+      isPlaying: true,
+      img: "./assets/img/banner01.jpg",
+      time: "04:16",
+    },
+    {
+      id: 2,
+      path: "./assets/songs/mat_ket_noi.mp3",
+      name: "Mất kết nối",
+      singer: "Dương Domic",
+      img: "./assets/img/picture02.jpg",
+      views: "28,498,341",
+      isPlaying: false,
+      img: "./assets/img/banner02.jpg",
+      time: "03:27",
+    },
+  ],
+  _currentIndex: 0,
+  _isPlaying: false,
+  start() {
+    this._render();
+    this._handlePlayback();
+
+    // DOM events
+    this._togglePlayElement.onclick = this._togglePlay.bind(this);
+
+    this._audioElement.onplay = () => {
+      this._playIconElement.classList.remove("fa-play");
+      this._playIconElement.classList.add("fa-pause");
+      this._isPlaying = true;
+
+      this._render();
+    };
+
+    this._audioElement.onpause = () => {
+      this._playIconElement.classList.remove("fa-pause");
+      this._playIconElement.classList.add("fa-play");
+      this._isPlaying = false;
+
+      this._render();
+    };
+
+    this._prevElement.onclick = this._handleControl.bind(this, this.PREV);
+    this._nextElement.onclick = this._handleControl.bind(this, this.NEXT);
+
+    this._audioElement.ontimeupdate = () => {
+      // Kiểm tra người dùng có đang tua (seek) video hay không!
+      if (this._progressElement.seeking) {
+        return;
+      }
+
+      // Lấy thời gian hiện tại của bài hát đang phát được tính bằng (s)
+      const currentTime = this._audioElement.currentTime;
+
+      // Lấy tổng thời lượng của bài hát tính bằng (s)
+      const duration = this._audioElement.duration;
+
+      // Tính phần trăm bài hát đã phát xong (%)
+      const progress = (currentTime / duration) * 100;
+
+      // Cập nhật giá trị vào thanh tiến trình
+      this._progressElement.value = progress || 0;
+
+      // Update start time khi phát nhạc
+      this._timeStartElement.textContent = this._formatTime(currentTime);
+
+      // Cập nhật màu vào thanh tiến trình
+      this._updateProgressBarColor(progress || 0);
+    };
+
+    // Khi kéo thanh progress (liên tục cập nhật màu)
+    this._progressElement.addEventListener("input", () => {
+      const nextStep = +this._progressElement.value;
+      this._updateProgressBarColor(nextStep);
+    });
+
+    this._progressElement.onmousedown = () => {
+      this._progressElement.seeking = true;
+    };
+
+    this._progressElement.onmouseup = () => {
+      const nextStep = +this._progressElement.value;
+
+      this._audioElement.currentTime =
+        (this._audioElement.duration / 100) * nextStep;
+
+      this._progressElement.seeking = false;
+    };
+  },
+  _formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  },
+  _handleControl(step) {
+    this._isPlaying = true;
+
+    const shouldReset = this._audioElement.currentTime > this.PREV_THROTTLE;
+
+    if (step === this.PREV && shouldReset) {
+      this._audioElement.currentTime = 0;
+      return;
+    }
+
+    this._currentIndex += step;
+    this._handleForNewIndex();
+  },
+  _handleForNewIndex() {
+    this._currentIndex =
+      (this._currentIndex + this._songs.length) % this._songs.length;
+    this._handlePlayback();
+    this._render();
+  },
+  _escapeHtml(str) {
+    const map = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#x27;",
+      "/": "&#x2F;",
+    };
+    return String(str).replace(/[&<>"'\/]/g, (char) => map[char]);
+  },
+  _updateProgressBarColor(value) {
+    const progress = Math.min(100, Math.max(0, Number(value.toFixed(2)))) + 0.5;
+
+    this._progressElement.style.background = `linear-gradient(to right, var(--accent-primary) 0%, var(--accent-primary) ${progress}%, #ccc ${progress}%, #ccc 100%)`;
+  },
+  _getCurrentSong() {
+    return this._songs[this._currentIndex];
+  },
+  _togglePlay() {
+    // Khi click vào nút play thì toggle song
+    if (this._audioElement.paused) {
+      this._audioElement.play();
+    } else {
+      this._audioElement.pause();
+    }
+  },
+  _handlePlayback() {
+    const currentSong = this._getCurrentSong(this._currentIndex);
+    this._artistNameElement.textContent = currentSong.name;
+    this._monthlyListenersElement = currentSong.views;
+    this._heroImageElement.src = currentSong.img;
+
+    this._audioElement.src = currentSong.path;
+
+    // oncanplay
+    this._audioElement.oncanplay = () => {
+      if (this._isPlaying) {
+        this._audioElement.play();
+      }
+
+      // Hiển thị thời gian kết thúc bằng thời lượng bài hát đã cho trước
+      this._timeEndElement.textContent = this._formatTime(
+        this._audioElement.duration || 0
+      );
+    };
+  },
+  _render() {
+    const html = this._songs
+      .map((song, index) => {
+        const isCurrentSongPlaying =
+          index === this._currentIndex && this._isPlaying;
+        return `
+        <div class="track-item ${isCurrentSongPlaying ? "playing" : ""}">
+          <div class="track-number">${
+            isCurrentSongPlaying
+              ? `<div class="equalizer">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              `
+              : index + 1
+          }</div>
+
+          <div class="track-image">
+            <img
+              src=${this._escapeHtml(song.img)}
+              alt="${this._escapeHtml(song.name)}"
+              width="40"
+              height="40"
+            />
+          </div>
+
+          <div class="track-info">
+            <div class="track-name ${
+              isCurrentSongPlaying ? "active" : ""
+            }">${this._escapeHtml(song.name)}</div>
+            <div class="track-singer">${this._escapeHtml(song.singer)}</div>
+          </div>
+
+          <div class="track-duration">${this._escapeHtml(song.time)}</div>
+
+          <button class="track-menu-btn">
+            <i class="fas fa-ellipsis-h"></i>
+          </button>
+        </div>
+      `;
+      })
+      .join("");
+
+    this._tracklistElement.innerHTML = html;
+  },
+};
