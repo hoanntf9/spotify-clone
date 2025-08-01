@@ -1,3 +1,6 @@
+import httpRequest from "./../../utils/httpRequest.js";
+import endpoints from "./../../utils/endpoints.js";
+
 // Auth Modal Functionality
 document.addEventListener("DOMContentLoaded", function () {
   // Get DOM elements
@@ -111,9 +114,18 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Other functionality
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   // TODO: Implement other functionality here
   // Player Start
+
+  // Gọi dữ liệu danh sách bài hát từ api
+  const { tracks } = await httpRequest.get(endpoints.tracks);
+  console.log("tracks", tracks);
+  if (tracks.length) {
+    // player._songs = res.tracks;
+    player._tracks = tracks;
+  }
+
   player.start();
 });
 
@@ -133,30 +145,7 @@ const player = {
   _timeEndElement: document.querySelector(".time-end"),
   _prevElement: document.querySelector(".btn-prev"),
   _nextElement: document.querySelector(".btn-next"),
-  _songs: [
-    {
-      id: 1,
-      path: "./assets/songs/tuyet_yeu_thuong.mp3",
-      name: "Tuyết yêu thương",
-      singer: "Mochi",
-      img: "./assets/img/picture01.jpg",
-      views: "27,498,341",
-      isPlaying: true,
-      img: "./assets/img/banner01.jpg",
-      time: "04:16",
-    },
-    {
-      id: 2,
-      path: "./assets/songs/mat_ket_noi.mp3",
-      name: "Mất kết nối",
-      singer: "Dương Domic",
-      img: "./assets/img/picture02.jpg",
-      views: "28,498,341",
-      isPlaying: false,
-      img: "./assets/img/banner02.jpg",
-      time: "03:27",
-    },
-  ],
+  _songs: [],
   _currentIndex: 0,
   _isPlaying: false,
   start() {
@@ -282,7 +271,7 @@ const player = {
   },
   _handlePlayback() {
     const currentSong = this._getCurrentSong(this._currentIndex);
-    this._artistNameElement.textContent = currentSong.name;
+    this._artistNameElement.textContent = currentSong.title;
     this._monthlyListenersElement = currentSong.views;
     this._heroImageElement.src = currentSong.img;
 
