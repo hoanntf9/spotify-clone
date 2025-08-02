@@ -1,5 +1,7 @@
 import httpRequest from "./../../utils/httpRequest.js";
 import endpoints from "./../../utils/endpoints.js";
+import { clearStorage, setItemStorage } from "./../../utils/storage.js";
+import { toast } from "./../../utils/toast.js";
 
 // Auth Modal Functionality
 document.addEventListener("DOMContentLoaded", function () {
@@ -12,6 +14,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.querySelector("#loginForm");
   const showLoginBtn = document.querySelector("#showLogin");
   const showSignupBtn = document.querySelector("#showSignup");
+  const authButtons = document.querySelector(".auth-buttons");
+
+  bindTogglePassword();
 
   // Function to show signup form
   function showSignupForm() {
@@ -75,13 +80,101 @@ document.addEventListener("DOMContentLoaded", function () {
   showSignupBtn.addEventListener("click", function () {
     showSignupForm();
   });
+
+  // Tạo chức năng đăng nhập
+  loginForm
+    .querySelector(".auth-form-content")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const authButtons = document.querySelector(".auth-buttons");
+      const userMenu = document.querySelector(".user-menu");
+      const email = document.querySelector("#loginEmail").value;
+      const password = document.querySelector("#loginPassword").value;
+
+      const credentials = {
+        email,
+        password,
+      };
+
+      try {
+        const { access_token, message, user } = await httpRequest.post(
+          endpoints.authLogin,
+          credentials
+        );
+
+        if (user) {
+          toast({
+            text: message,
+            duration: 1000,
+          });
+
+          setItemStorage("accessToken", access_token);
+          setItemStorage("user", user);
+          this.reset();
+          closeModal();
+
+          authButtons.classList.remove("show");
+          userMenu.classList.add("show");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+  // Tạo chức năng đăng ký
+  signupForm
+    .querySelector(".auth-form-content")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.querySelector("#signupEmail").value;
+      const password = document.querySelector("#signupPassword").value;
+
+      const credentials = {
+        email,
+        password,
+      };
+
+      try {
+        const { user, access_token, message } = await httpRequest.post(
+          endpoints.authRegister,
+          credentials
+        );
+
+        if (user) {
+          toast({
+            text: message,
+            duration: 3000,
+            gravity: "top",
+            position: "center",
+          });
+
+          setItemStorage("accessToken", access_token);
+          showLoginForm();
+          authButtons.classList.add("show");
+        }
+      } catch (error) {
+        const errorCode = error?.response?.error?.code;
+        const errorMessage = error?.response?.error?.message;
+
+        if (errorCode === "EMAIL_EXISTS") {
+          toast({
+            text: errorMessage || "Email Exists",
+            duration: 3000,
+          });
+
+          console.log("EMAIL_EXISTS");
+        }
+      }
+    });
 });
 
 // User Menu Dropdown Functionality
 document.addEventListener("DOMContentLoaded", function () {
   const userAvatar = document.getElementById("userAvatar");
   const userDropdown = document.getElementById("userDropdown");
-  const logoutBtn = document.getElementById("logoutBtn");
+  const logoutBtn = document.querySelector("#logoutBtn");
 
   // Toggle dropdown when clicking avatar
   userAvatar.addEventListener("click", function (e) {
@@ -104,12 +197,22 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Handle logout button click
-  logoutBtn.addEventListener("click", function () {
+  logoutBtn.addEventListener("click", async function () {
     // Close dropdown first
     userDropdown.classList.remove("show");
 
-    console.log("Logout clicked");
-    // TODO: Students will implement logout logic here
+    // callAPI logout
+    const { message } = await httpRequest.post(endpoints.authLogout);
+
+    if (message) {
+      toast({
+        text: "Logout successfully",
+        duration: 3000,
+      });
+
+      clearStorage();
+      window.location.href = "/";
+    }
   });
 });
 
@@ -345,3 +448,34 @@ const player = {
     this._tracklistElement.innerHTML = html;
   },
 };
+
+document.addEventListener("DOMContentLoaded", async function () {
+  const authButtons = document.querySelector(".auth-buttons");
+  const userMenu = document.querySelector(".user-menu");
+
+  try {
+    const { user } = await httpRequest.get(endpoints.usersMe);
+    userMenu.classList.add("show");
+  } catch (error) {
+    authButtons.classList.add("show");
+  }
+});
+
+function bindTogglePassword() {
+  const eyeToggles = document.querySelectorAll(".input-with-eye .eye-toggle");
+  eyeToggles.forEach((toggle) => {
+    const icon = toggle.querySelector(".icon-eye");
+
+    toggle.addEventListener("click", () => {
+      const input = toggle.closest(".input-with-eye").querySelector("input");
+      const typePasswordInput = input.type;
+
+      input.type = typePasswordInput === "password" ? "text" : "password";
+
+      icon.classList.toggle("fa-eye");
+      icon.classList.toggle("fa-eye-slash");
+
+      input.focus();
+    });
+  });
+}

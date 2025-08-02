@@ -921,6 +921,28 @@ input[type="range"].progress-bar::-webkit-slider-thumb:hover {
   display: flex;
 }
 
+.form-group.input-with-eye {
+  position: relative;
+}
+
+.input-with-eye .eye-toggle {
+  font-size: 14px;
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #f1f1f1;
+}
+
+.input-with-eye .eye-toggle:hover {
+  color: var(--accent-primary);
+}
+
+.input-with-eye .eye-toggle i {
+  pointer-events: none;
+}
+
 /* Submit Button */
 .auth-submit-btn {
   width: 100%;
@@ -968,8 +990,12 @@ input[type="range"].progress-bar::-webkit-slider-thumb:hover {
 /* User Menu */
 .user-menu {
   position: relative;
-  display: flex;
+  display: none;
   align-items: center;
+}
+
+.user-menu.show {
+  display: flex;
 }
 
 .user-avatar {

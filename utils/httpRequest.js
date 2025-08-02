@@ -1,3 +1,5 @@
+import { getItemStorage } from "./storage.js";
+
 const METHODS = {
   GET: "GET",
   POST: "POST",
@@ -26,25 +28,27 @@ class HttpRequest {
         },
       };
 
-      const res = await fetch(`${this.baseUrl}${path}`, {
-        ...options,
-        method,
-        headers: {
-          ...options.headers,
-          contentTypes,
-        },
-      });
-
       if (data) {
         _option.body = JSON.stringify(data);
       }
+      const accessToken = getItemStorage("accessToken");
+      if (accessToken) {
+        _option.headers.Authorization = `Bearer ${accessToken}`;
+      }
 
-      if (!res.ok) throw new Error(`HTTP error: `, res.status);
+      const res = await fetch(`${this.baseUrl}${path}`, _option);
       const response = await res.json();
+      if (!res.ok) {
+        const error = new Error(`HTTP error: `, res.status);
+
+        error.response = response?.error;
+        error.status = res.status;
+        throw error;
+      }
 
       return response;
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   }
 
@@ -52,7 +56,7 @@ class HttpRequest {
     return await this._send(path, METHODS.GET, null, options);
   }
 
-  async post(path, options) {
+  async post(path, data, options) {
     return await this._send(path, METHODS.POST, data, options);
   }
 
