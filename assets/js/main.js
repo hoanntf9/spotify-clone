@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (user) {
           toast({
             text: message,
-            duration: 1000,
+            type: "success"
           });
 
           setItemStorage("accessToken", access_token);
@@ -118,7 +118,16 @@ document.addEventListener("DOMContentLoaded", function () {
           userMenu.classList.add("show");
         }
       } catch (error) {
-        console.log(error);
+        const errorCode = error?.response?.code;
+        const errorMessage = error?.response?.message;
+
+        if (errorCode === "INVALID_CREDENTIALS") {
+          toast({
+            text: errorMessage,
+            type: "error"
+          });
+        }
+
       }
     });
 
@@ -145,9 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (user) {
           toast({
             text: message,
-            duration: 3000,
-            gravity: "top",
-            position: "center",
+            type: "success"
           });
 
           setItemStorage("accessToken", access_token);
@@ -161,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (errorCode === "EMAIL_EXISTS") {
           toast({
             text: errorMessage || "Email Exists",
-            duration: 3000,
+            type: "error"
           });
 
           console.log("EMAIL_EXISTS");
@@ -207,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (message) {
       toast({
         text: "Logout successfully",
-        duration: 3000,
+        type: "success",
       });
 
       clearStorage();
