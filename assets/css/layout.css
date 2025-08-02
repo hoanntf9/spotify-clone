@@ -63,6 +63,16 @@
   gap: var(--spacing-xs);
 }
 
+.library-content.grid-view,
+.library-content.compact-grid-view {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.library-content.compact-grid-view {
+  justify-content: space-between;
+}
+
 /* Main Content */
 .main-content {
   grid-area: main;

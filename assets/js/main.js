@@ -1,6 +1,7 @@
 import httpRequest from "./../../utils/httpRequest.js";
 import endpoints from "./../../utils/endpoints.js";
 import { toast } from "./../../utils/toast.js";
+import { initDynamicTooltips } from "./../../utils/tooltip.js";
 import { clearStorage, setItemStorage } from "./../../utils/storage.js";
 
 // Auth Modal Functionality
@@ -403,15 +404,16 @@ const player = {
           index === this._currentIndex && this._isPlaying;
         return `
         <div class="track-item ${isCurrentSongPlaying ? "playing" : ""}">
-          <div class="track-number">${isCurrentSongPlaying
-            ? `<div class="equalizer">
+          <div class="track-number">${
+            isCurrentSongPlaying
+              ? `<div class="equalizer">
                   <span></span>
                   <span></span>
                   <span></span>
                   <span></span>
                 </div>
               `
-            : index + 1
+              : index + 1
           }</div>
 
           <div class="track-image">
@@ -424,11 +426,12 @@ const player = {
           </div>
 
           <div class="track-info">
-            <div class="track-name ${isCurrentSongPlaying ? "active" : ""
-          }">${this._escapeHtml(track.title)}</div>
+            <div class="track-name ${
+              isCurrentSongPlaying ? "active" : ""
+            }">${this._escapeHtml(track.title)}</div>
             <div class="track-singer">${this._escapeHtml(
-            track.artist_name
-          )}</div>
+              track.artist_name
+            )}</div>
           </div>
 
           <div class="track-duration">${this._escapeHtml(
